@@ -1,0 +1,21 @@
+graph TD
+    A[Start] --> B{Is it 15 min before usual wake-up time?}
+    B -->|Yes| C[Gradually increase bedroom temperature]
+    B -->|No| B
+    C --> D{Is it wake-up time?}
+    D -->|Yes| E[Slowly raise bedroom blinds]
+    D -->|No| D
+    E --> F[Turn on coffee maker]
+    F --> G{User enters bathroom?}
+    G -->|Yes| H[Provide voice briefing]
+    G -->|No| G
+    H --> I{User deviates from routine?}
+    I -->|Yes| J[Adjust actions accordingly]
+    I -->|No| K[Continue normal routine]
+    J --> L[Learn from deviations]
+    K --> L
+    L --> M{User override?}
+    M -->|Yes| N[Execute override]
+    M -->|No| O[End morning routine]
+    N --> P[Update AI model with new preference]
+    P --> O
