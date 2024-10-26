@@ -1,0 +1,208 @@
+// Import TensorFlow.js from CDN in your HTML:
+// <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+
+class SmartHomeAI {
+    constructor() {
+        this.routineData = [];
+        this.model = null;
+        this.initialized = false;
+        this.initializeModel();
+    }
+
+    async initializeModel() {
+        // Create a simple neural network
+        this.model = tf.sequential({
+            layers: [
+                tf.layers.dense({ inputShape: [6], units: 12, activation: 'relu' }),
+                tf.layers.dense({ units: 8, activation: 'relu' }),
+                tf.layers.dense({ units: 4, activation: 'sigmoid' })
+            ]
+        });
+
+        // Compile the model
+        this.model.compile({
+            optimizer: tf.train.adam(0.01),
+            loss: 'meanSquaredError'
+        });
+
+        this.initialized = true;
+    }
+
+    // Record daily routine data
+    recordRoutineData(routineData) {
+        const data = {
+            timestamp: Date.now(),
+            wakeUpTime: this.timeToDecimal(routineData.wakeUpTime),
+            temperature: routineData.temperature,
+            coffeeTime: routineData.coffeeTime ? this.timeToDecimal(routineData.coffeeTime) : null,
+            lightsOnTime: routineData.lightsOnTime ? this.timeToDecimal(routineData.lightsOnTime) : null,
+            blindsOpenTime: routineData.blindsOpenTime ? this.timeToDecimal(routineData.blindsOpenTime) : null,
+            dayOfWeek: new Date().getDay()
+        };
+
+        this.routineData.push(data);
+        this.learn();
+    }
+
+    // Convert time to decimal for AI processing
+    timeToDecimal(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours + (minutes / 60);
+    }
+
+    // Convert decimal back to time string
+    decimalToTime(decimal) {
+        const hours = Math.floor(decimal);
+        const minutes = Math.round((decimal - hours) * 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+
+    // Prepare data for training
+    prepareTrainingData() {
+        const inputs = [];
+        const outputs = [];
+
+        for (let i = 0; i < this.routineData.length - 1; i++) {
+            const input = [
+                this.routineData[i].wakeUpTime,
+                this.routineData[i].temperature,
+                this.routineData[i].coffeeTime || 0,
+                this.routineData[i].lightsOnTime || 0,
+                this.routineData[i].blindsOpenTime || 0,
+                this.routineData[i].dayOfWeek
+            ];
+
+            const output = [
+                this.routineData[i + 1].wakeUpTime,
+                this.routineData[i + 1].temperature,
+                this.routineData[i + 1].coffeeTime || 0,
+                this.routineData[i + 1].blindsOpenTime || 0
+            ];
+
+            inputs.push(input);
+            outputs.push(output);
+        }
+
+        return {
+            inputs: tf.tensor2d(inputs),
+            outputs: tf.tensor2d(outputs)
+        };
+    }
+
+    // Train the model with recorded data
+    async learn() {
+        if (this.routineData.length < 2) return;
+
+        const trainingData = this.prepareTrainingData();
+        
+        await this.model.fit(trainingData.inputs, trainingData.outputs, {
+            epochs: 10,
+            batchSize: 1,
+            shuffle: true
+        });
+
+        // Clean up to prevent memory leaks
+        trainingData.inputs.dispose();
+        trainingData.outputs.dispose();
+    }
+
+    // Predict next day's routine
+    async predictRoutine(currentRoutine) {
+        if (!this.initialized || this.routineData.length < 2) {
+            return null;
+        }
+
+        const input = tf.tensor2d([[
+            this.timeToDecimal(currentRoutine.wakeUpTime),
+            currentRoutine.temperature,
+            currentRoutine.coffeeTime ? this.timeToDecimal(currentRoutine.coffeeTime) : 0,
+            currentRoutine.lightsOnTime ? this.timeToDecimal(currentRoutine.lightsOnTime) : 0,
+            currentRoutine.blindsOpenTime ? this.timeToDecimal(currentRoutine.blindsOpenTime) : 0,
+            new Date().getDay()
+        ]]);
+
+        const prediction = await this.model.predict(input).array();
+        input.dispose();
+
+        return {
+            predictedWakeUpTime: this.decimalToTime(prediction[0][0]),
+            predictedTemperature: Math.round(prediction[0][1] * 10) / 10,
+            predictedCoffeeTime: this.decimalToTime(prediction[0][2]),
+            predictedBlindsTime: this.decimalToTime(prediction[0][3])
+        };
+    }
+
+    // Get insights about user patterns
+    getInsights() {
+        if (this.routineData.length < 7) {
+            return "Need more data to generate insights";
+        }
+
+        const insights = {
+            averageWakeUpTime: this.calculateAverageTime('wakeUpTime'),
+            consistencyScore: this.calculateConsistencyScore(),
+            commonPatterns: this.identifyCommonPatterns()
+        };
+
+        return insights;
+    }
+
+    calculateAverageTime(timeProperty) {
+        const times = this.routineData.map(data => data[timeProperty]).filter(Boolean);
+        const avg = times.reduce((sum, time) => sum + time, 0) / times.length;
+        return this.decimalToTime(avg);
+    }
+
+    calculateConsistencyScore() {
+        // Calculate variance in wake-up times
+        const wakeUpTimes = this.routineData.map(data => data.wakeUpTime);
+        const variance = this.calculateVariance(wakeUpTimes);
+        return Math.max(0, 100 - (variance * 100));
+    }
+
+    calculateVariance(numbers) {
+        const mean = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
+        const squareDiffs = numbers.map(num => Math.pow(num - mean, 2));
+        return squareDiffs.reduce((sum, diff) => sum + diff, 0) / numbers.length;
+    }
+
+    identifyCommonPatterns() {
+        // Analyze patterns in the data
+        const patterns = {
+            weekdayWakeUp: this.calculateAverageTime('wakeUpTime', day => day < 5),
+            weekendWakeUp: this.calculateAverageTime('wakeUpTime', day => day >= 5),
+            temperaturePreference: this.calculateAverageTemperature()
+        };
+
+        return patterns;
+    }
+}
+
+// Example usage:
+const smartAI = new SmartHomeAI();
+
+// Add to your existing dashboard code:
+function updateRoutine(routineData) {
+    smartAI.recordRoutineData(routineData);
+    
+    // Get predictions for tomorrow
+    smartAI.predictRoutine(routineData).then(prediction => {
+        if (prediction) {
+            updateDashboardWithPredictions(prediction);
+        }
+    });
+}
+
+function updateDashboardWithPredictions(prediction) {
+    // Update UI elements with predictions
+    document.getElementById('predictedWakeUp').textContent = 
+        `Predicted wake-up time tomorrow: ${prediction.predictedWakeUpTime}`;
+    document.getElementById('predictedTemp').textContent = 
+        `Recommended temperature: ${prediction.predictedTemperature}°C`;
+}
+
+// Get insights periodically
+setInterval(() => {
+    const insights = smartAI.getInsights();
+    updateInsightsDisplay(insights);
+}, 3600000); // Update every hour
