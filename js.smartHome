@@ -1,0 +1,68 @@
+
+    <script>
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Temperature Control
+        let currentTemp = 21;
+        function adjustTemp(change) {
+            currentTemp += change;
+            document.getElementById('tempDisplay').textContent = `${currentTemp}°C`;
+            updateTempChart();
+        }
+
+        // Temperature Chart
+        const ctx = document.getElementById('tempChart').getContext('2d');
+        let tempData = Array(24).fill(21);
+        const tempChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: tempData,
+                    borderColor: '#2563eb',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 15,
+                        max: 30
+                    }
+                }
+            }
+        });
+
+        function updateTempChart() {
+            const hour = new Date().getHours();
+            tempData[hour] = currentTemp;
+            tempChart.update();
+        }
+
+        // Device Control
+        function toggleDevice(device, state) {
+            console.log(`${device} is now ${state ? 'on' : 'off'}`);
+            // Here you would typically make an API call to your smart home system
+        }
+
+        // Morning Routine
+        document.getElementById('routineToggle').addEventListener('change', function(e) {
+            const wakeupTime = document.getElementById('wakeupTime').value;
+            if (e.target.checked) {
+                console.log(`Morning routine activated for ${wakeupTime}`);
+                // Here you would typically set up the morning routine
+            } else {
+                console.log('Morning routine deactivated');
+            }
+        });
+    </script>
