@@ -1,0 +1,240 @@
+# Smart Home AI - Troubleshooting Guide
+
+## Table of Contents
+1. [Quick Start Guide](#quick-start-guide)
+2. [Common Issues](#common-issues)
+3. [Performance Optimization](#performance-optimization)
+4. [Debugging Tools](#debugging-tools)
+5. [Support Resources](#support-resources)
+
+## Quick Start Guide
+
+### System Requirements
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- JavaScript enabled
+- Minimum 4GB RAM recommended
+- Stable internet connection for AI features
+
+### Pre-Flight Checklist
+```javascript
+// Run this diagnostic check before reporting issues
+async function systemCheck() {
+    const checks = {
+        tensorflow: await checkTensorFlow(),
+        chartjs: await checkChartJS(),
+        localStorage: checkLocalStorage(),
+        deviceConnectivity: await checkDevices()
+    };
+    console.table(checks);
+}
+```
+
+## Common Issues
+
+### 1. Dashboard Not Loading
+**Symptoms:**
+- Blank screen
+- Loading spinner that never completes
+- JavaScript console errors
+
+**Solutions:**
+1. Clear browser cache and reload
+2. Check browser console for specific errors
+3. Verify CDN connections:
+```javascript
+// Test CDN connections
+fetch('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest')
+    .then(response => console.log('TensorFlow.js loaded successfully'))
+    .catch(error => console.error('TensorFlow.js failed to load:', error));
+
+fetch('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js')
+    .then(response => console.log('Chart.js loaded successfully'))
+    .catch(error => console.error('Chart.js failed to load:', error));
+```
+
+### 2. AI Learning System Issues
+**Symptoms:**
+- Predictions not updating
+- Incorrect pattern recognition
+- TensorFlow-related console errors
+
+**Solutions:**
+```javascript
+// Verify data collection
+console.log(smartAI.routineData.length, 'days of data collected');
+
+// Reset AI system
+localStorage.clear(); // Clear stored data
+smartAI.initializeModel(); // Reinitialize model
+
+// Check data integrity
+function verifyDataIntegrity() {
+    return smartAI.routineData.every(data => {
+        return data.wakeUpTime && 
+               data.temperature && 
+               data.timestamp;
+    });
+}
+```
+
+### 3. Device Control Problems
+**Solutions:**
+```javascript
+// Device connection checker
+async function diagnoseDevice(deviceId) {
+    const tests = {
+        connection: await checkDeviceConnection(deviceId),
+        state: await getDeviceState(deviceId),
+        lastResponse: await getDeviceResponseTime(deviceId)
+    };
+    return tests;
+}
+
+// Reset device connection
+function resetDevice(deviceId) {
+    toggleDevice(deviceId, false);
+    setTimeout(() => toggleDevice(deviceId, true), 1000);
+}
+```
+
+## Performance Optimization
+
+### Memory Management
+```javascript
+// Memory cleanup utility
+class MemoryManager {
+    static cleanupOldData(daysToKeep = 30) {
+        const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000);
+        smartAI.routineData = smartAI.routineData.filter(data => 
+            data.timestamp > cutoffDate
+        );
+    }
+
+    static monitorMemoryUsage() {
+        if (performance.memory) {
+            console.log('Memory usage:', {
+                used: performance.memory.usedJSHeapSize,
+                total: performance.memory.totalJSHeapSize
+            });
+        }
+    }
+}
+```
+
+### CPU Usage Optimization
+```javascript
+// CPU usage monitor
+class PerformanceMonitor {
+    static startMonitoring() {
+        let lastTime = performance.now();
+        
+        setInterval(() => {
+            const currentTime = performance.now();
+            const elapsedTime = currentTime - lastTime;
+            
+            if (elapsedTime > 100) { // Check for long operations
+                console.warn('Performance issue detected:', elapsedTime + 'ms');
+            }
+            
+            lastTime = currentTime;
+        }, 1000);
+    }
+}
+```
+
+## Debugging Tools
+
+### Debug Mode
+```javascript
+class DebugTools {
+    static DEBUG_MODE = false;
+
+    static enableDebugMode() {
+        this.DEBUG_MODE = true;
+        this.attachDebugListeners();
+        console.log('Debug mode enabled');
+    }
+
+    static log(...args) {
+        if (this.DEBUG_MODE) {
+            console.log('[Debug]', ...args);
+        }
+    }
+
+    static attachDebugListeners() {
+        // Monitor device state changes
+        document.querySelectorAll('.device-control input').forEach(control => {
+            control.addEventListener('change', (e) => {
+                this.log('Device state changed:', {
+                    device: e.target.id,
+                    state: e.target.checked
+                });
+            });
+        });
+
+        // Monitor temperature changes
+        this.log('Debug listeners attached');
+    }
+}
+```
+
+### State Inspector
+```javascript
+class StateInspector {
+    static getSystemState() {
+        return {
+            aiStatus: {
+                initialized: smartAI.initialized,
+                dataPoints: smartAI.routineData.length,
+                lastTraining: smartAI.lastTrainingTime
+            },
+            devices: {
+                active: this.getActiveDevices(),
+                total: this.getTotalDevices(),
+                errorCount: this.getDeviceErrors()
+            },
+            environment: {
+                temperature: currentTemp,
+                targetTemp: getTargetTemperature(),
+                lastUpdate: new Date().toISOString()
+            }
+        };
+    }
+
+    static startStateLogging(interval = 5000) {
+        setInterval(() => {
+            const state = this.getSystemState();
+            console.table(state);
+        }, interval);
+    }
+}
+```
+
+## Support Resources
+
+### Contact Information
+- Technical Support: support@smarthomeai.com
+- Bug Reports: bugs@smarthomeai.com
+- Feature Requests: features@smarthomeai.com
+
+### Online Resources
+- Documentation: https://docs.smarthomeai.com
+- API Reference: https://api.smarthomeai.com/docs
+- Community Forum: https://community.smarthomeai.com
+
+### Error Reporting
+```javascript
+function reportError(error, context) {
+    const errorReport = {
+        timestamp: new Date().toISOString(),
+        error: {
+            message: error.message,
+            stack: error.stack,
+            type: error.name
+        },
+        context: context,
+        systemState: StateInspector.getSystemState()
+    };
+
+    // Send to error reporting service
+    console.error('Error Rep
