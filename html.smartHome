@@ -1,0 +1,68 @@
+​<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+   </head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Smart Home Dashboard</h1>
+            <div id="clock"></div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <h2>Morning Routine</h2>
+                <div class="device-control">
+                    <span>Auto Wake-up</span>
+                    <label class="switch">
+                        <input type="checkbox" id="routineToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="device-control">
+                    <span>Wake-up Time</span>
+                    <input type="time" id="wakeupTime" value="07:00">
+                </div>
+            </div>
+            <div class="card">
+                <h2>Temperature Control</h2>
+                <div class="temperature-control">
+                    <button class="temp-btn" onclick="adjustTemp(-1)">-</button>
+                    <span class="temp-display" id="tempDisplay">21°C</span>
+                    <button class="temp-btn" onclick="adjustTemp(1)">+</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Active Devices</h2>
+                <div class="device-control">
+                    <span>Lights</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="toggleDevice('lights', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="device-control">
+                    <span>Coffee Maker</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="toggleDevice('coffee', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="device-control">
+                    <span>Blinds</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="toggleDevice('blinds', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+      </body>
+      </html>
